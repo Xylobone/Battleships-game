@@ -7,7 +7,14 @@ def is_sunk(ship):
 
 def ship_type(ship):
     #remove pass and add your implementation
-    pass
+    if ship[3] == 1:
+        return "submarine"
+    elif ship[3] == 2:
+        return "destroyer"
+    elif ship[3] == 3:
+        return "cruiser"
+    elif ship[3] == 4:
+        return "battleship"
 
 def is_open_sea(row, column, fleet):
     #remove pass and add your implementation
