@@ -220,26 +220,118 @@ def main():
                     numberofships = numberofships + 1
 
     randomly_place_all_ships()
+
+    # Printing fleet1 to check values
+    for items in fleet1:
+        print(items)
+
+
+    # Creating the text-based base grid in which provides the visualisation for the game.
+    # A list of ten lists, which will become a 10x10 grid in the terminal.
+    # Inspiration comes from the project description, which I thought was a very effective way of representing game state.
     
+    # The visualisation displays:
+    # Rows and column numbers
+    # state of each square, with statuses inluding: unknown, miss, hit.
+    # If a ship is sunk it will display its type indicated by the first character (e.g. B for Battleship)
+
+    grid = [[" . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . "],
+            [" . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . "],
+            [" . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . "],
+            [" . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . "],
+            [" . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . "],
+            [" . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . "],
+            [" . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . "],
+            [" . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . "],
+            [" . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . "],
+            [" . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . ", " . "]]
+    
+    # Function to show columns and rows
+    def row_and_column_display(grid):
+        rows = len(grid)
+        columns = len(grid[0])
+
+        display = ("    " + "  ".join(str(i) for i in range(rows)) + "\n" + "   " + " ".join( ' ―' for i in range(columns)) + '\n')
+        
+        for i, row in enumerate(grid):
+            display = display + (str(i)+ " |" + ''.join(str(item) for item in row) + '\n')
+        return display
+
+
     game_over = False
     shots = 0
-
+    print("***** Welcome to battleships. *****\n")
     while not game_over:
-        loc_str = input("Enter row and column to shoot (separted by space): ").split()    
+        
+        # Printing the grid display. This is updated every time a new co-ordinate is entered.
+        print(row_and_column_display(grid))
+
+        # Handling execptions. the application should only except a signle digit followed by a space
+        # followed by another single digit.
+        while True:
+            try:
+                loc_str = (input("Please enter a row and column to shoot, separated by a space: ")) 
+                if  len(loc_str) < 3 or len(loc_str) > 3:
+                    raise ValueError
+                if not loc_str[1] == " ":
+                    raise ValueError
+                if not loc_str[0].isdigit() == True:
+                    raise ValueError
+                if not loc_str[2].isdigit() == True:
+                    raise ValueError
+            except ValueError:
+                print("That wasn't a valid input, please enter your row and column again separated by a space: ")
+                continue 
+            else:
+                break
+    
+        loc_str = loc_str.split()
         current_row = int(loc_str[0])
         current_column = int(loc_str[1])
+
         shots += 1
+
         if check_if_hits(current_row, current_column, fleet1) == True:
-            print("You have a hit!")
+            print("--- You have a hit! ---")
             (fleet1, ship_hit) = hit(current_row, current_column, fleet1)
+            
+            # Replacing hit spot with " * " which indicates a hit
+            grid[current_row][current_column] = " * "
+
             if is_sunk(ship_hit):
                 print("You sank a " + ship_type(ship_hit) + "!")
+                
+                # Turning a set of tuples into a list of tuples
+                sunk_ship_hits = list(ship_hit[4])
+                # Turning a list of tuples into a list of lists
+                sunk_ship_hits_lists = [list(x) for x in sunk_ship_hits]
+                
+                #Iterates through the list of hits
+                for i in range(len(sunk_ship_hits_lists)):
+                    # Takes items in coordinate pairs and amends their position in the grid.
+                    row_edit = sunk_ship_hits_lists[i][0]
+                    column_edit = sunk_ship_hits_lists[i][1]
+                    if ship_hit[3] == 4:
+                        grid[row_edit][column_edit] = " B "
+                    elif ship_hit[3] == 3:
+                        grid[row_edit][column_edit] = " C "
+                    elif ship_hit[3] == 2:
+                        grid[row_edit][column_edit] = " D "
+                    elif ship_hit[3] == 1:
+                        grid[row_edit][column_edit] = " S "
+                        
         else:
-            print("You missed!")
+            print("--- You have missed! ---")
+
+            # Misses are indicated by a " - " on the grid
+            grid[current_row][current_column] = " - "
 
         if not are_unsunk_ships_left(fleet1): game_over = True
 
-    print("Game over! You required", shots, "shots.")
+    #Game over message with shots required and final game board
+    print("Game over - all ships suck! You required", shots, "shots. \n")
+    print("Here is the Final Gameboard: \n")
+    print(row_and_column_display(grid))
 
 
 if __name__ == '__main__': #keep this in
